@@ -1,0 +1,95 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+@theme {
+  --color-brand-primary: #FF8A00;
+  --color-brand-secondary: #FFC700;
+  --color-brand-dark: #1A1A1A;
+  --color-brand-light: #F5F5F7;
+  --color-brand-success: #4CAF50;
+  --color-brand-error: #E53935;
+  
+  --font-outfit: "Outfit", sans-serif;
+  --font-inter: "Inter", sans-serif;
+
+  --animate-shimmer: shimmer 5s linear infinite;
+
+  @keyframes shimmer {
+    from { background-position: 0% center; }
+    to { background-position: 200% center; }
+  }
+}
+
+/* Global Transitions for theme switching */
+* {
+  @apply transition-colors duration-300;
+}
+
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  --bg-main: #FFFFFF;
+  --text-main: #1A1A1A;
+  --card-bg: #FFFFFF;
+  --card-border: #F3F4F6;
+  --nav-bg: rgba(255, 255, 255, 0.7);
+}
+
+.dark {
+  --bg-main: #0F1115;
+  --text-main: #F5F5F7;
+  --card-bg: #1E2229;
+  --card-border: #2D333E;
+  --nav-bg: rgba(15, 17, 21, 0.9);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  @apply overflow-x-hidden;
+}
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-outfit font-bold;
+    color: var(--text-main);
+  }
+}
+
+.glass-morphism {
+  background-color: var(--nav-bg);
+  @apply backdrop-blur-md border border-white/10;
+}
+
+.dark .glass-morphism {
+  @apply border-white/5;
+}
+
+.hover-card {
+  @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-2;
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+}
+
+.btn-primary {
+  @apply px-6 py-2 bg-brand-primary text-white rounded-full font-semibold transition-all hover:bg-orange-600 hover:shadow-[0_8px_30px_rgb(255,138,0,0.4)] active:scale-95;
+}
+
+.btn-secondary {
+  @apply px-6 py-2 border-2 border-brand-primary text-brand-primary rounded-full font-semibold transition-all hover:bg-brand-primary hover:text-white active:scale-95;
+}
+
+/* HD Aesthetics */
+.hd-gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary bg-[length:200%_auto] animate-shimmer;
+}
+
+.glass-card {
+  @apply backdrop-blur-xl bg-white/5 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)];
+}
+
