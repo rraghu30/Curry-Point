@@ -18,6 +18,10 @@ console.log('Backend connected to Supabase.');
 
 // --- API ENDPOINTS ---
 
+app.get('/api', (req, res) => {
+  res.json({ message: 'CurryPoint API is active!' });
+});
+
 // GET all food items
 app.get('/api/menu', async (req, res) => {
   try {
@@ -264,6 +268,10 @@ app.put('/api/orders/:id/status', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Backend server is running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Backend server is running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
