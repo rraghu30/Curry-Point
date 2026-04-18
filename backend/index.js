@@ -1,7 +1,7 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -9,188 +9,259 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Initialize SQLite database
-const dbPath = path.resolve(__dirname, 'database.sqlite');
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Error opening database', err.message);
-  } else {
-    console.log('Connected to the SQLite database.');
-    
-    // Enable Foreign Keys
-    db.run('PRAGMA foreign_keys = ON');
-    
-    // Create Food Items Table
-    db.run(`CREATE TABLE IF NOT EXISTS food_items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      description TEXT,
-      price REAL NOT NULL,
-      originalPrice REAL,
-      image TEXT,
-      category TEXT,
-      isVeg INTEGER,
-      rating REAL,
-      tags TEXT
-    )`);
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Create Orders Table
-    db.run(`CREATE TABLE IF NOT EXISTS orders (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      customerName TEXT,
-      mobileNumber TEXT,
-      address TEXT,
-      paymentMethod TEXT,
-      totalAmount REAL,
-      status TEXT DEFAULT 'Pending',
-      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`);
-
-    // Create Order Items Table
-    db.run(`CREATE TABLE IF NOT EXISTS order_items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      order_id INTEGER,
-      food_id INTEGER,
-      quantity INTEGER,
-      price REAL,
-      FOREIGN KEY (order_id) REFERENCES orders(id),
-      FOREIGN KEY (food_id) REFERENCES food_items(id)
-    )`);
-  }
-});
+console.log('Backend connected to Supabase.');
 
 // --- API ENDPOINTS ---
 
 // GET all food items
-app.get('/api/menu', (req, res) => {
-  db.all('SELECT * FROM food_items', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    // Parse tags back into array
-    const menu = rows.map(item => ({
+app.get('/api/menu', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('food_items')
+      .select('*');
+    
+    if (error) throw error;
+    
+    // Transform to match frontend expectations if necessary
+    const menu = data.map(item => ({
       ...item,
-      isVeg: item.isVeg === 1,
-      tags: item.tags ? JSON.parse(item.tags) : []
+      isVeg: item.is_veg,
+      originalPrice: item.original_price,
+      tags: item.tags // Supabase JSONB is already an array
     }));
+    
     res.json(menu);
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST a new food item
-app.post('/api/menu', (req, res) => {
+app.post('/api/menu', async (req, res) => {
   const { name, description, price, originalPrice, image, category, isVeg, rating, tags } = req.body;
-  const sql = `INSERT INTO food_items (name, description, price, originalPrice, image, category, isVeg, rating, tags)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-  const params = [name, description, price, originalPrice, image, category, isVeg ? 1 : 0, rating, JSON.stringify(tags || [])];
   
-  db.run(sql, params, function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ id: this.lastID, ...req.body });
-  });
+  try {
+    const { data, error } = await supabase
+      .from('food_items')
+      .insert([
+        { 
+          name, 
+          description, 
+          price, 
+          original_price: originalPrice, 
+          image, 
+          category, 
+          is_veg: isVeg, 
+          rating, 
+          tags 
+        }
+      ])
+      .select();
+
+    if (error) throw error;
+    res.json(data[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // PUT (Update) a food item
-app.put('/api/menu/:id', (req, res) => {
+app.put('/api/menu/:id', async (req, res) => {
   const { name, description, price, originalPrice, image, category, isVeg, rating, tags } = req.body;
-  const sql = `UPDATE food_items 
-               SET name = ?, description = ?, price = ?, originalPrice = ?, image = ?, category = ?, isVeg = ?, rating = ?, tags = ?
-               WHERE id = ?`;
-  const params = [name, description, price, originalPrice, image, category, isVeg ? 1 : 0, rating, JSON.stringify(tags || []), req.params.id];
   
-  db.run(sql, params, function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: 'Item updated successfully' });
-  });
+  try {
+    const { data, error } = await supabase
+      .from('food_items')
+      .update({ 
+        name, 
+        description, 
+        price, 
+        original_price: originalPrice, 
+        image, 
+        category, 
+        is_veg: isVeg, 
+        rating, 
+        tags 
+      })
+      .eq('id', req.params.id)
+      .select();
+
+    if (error) throw error;
+    res.json(data[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // DELETE a food item
-app.delete('/api/menu/:id', (req, res) => {
-  const itemId = req.params.id;
-  
-  // First, delete related items to prevent constraint errors
-  db.run('DELETE FROM order_items WHERE food_id = ?', [itemId], (err) => {
-    if (err) return res.status(500).json({ error: err.message });
-    
-    db.run('DELETE FROM food_items WHERE id = ?', [itemId], function(err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ message: 'Item deleted successfully', changes: this.changes });
-    });
-  });
+app.delete('/api/menu/:id', async (req, res) => {
+  try {
+    const { error } = await supabase
+      .from('food_items')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (error) throw error;
+    res.json({ message: 'Item deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET all orders (Admin)
-app.get('/api/orders', (req, res) => {
-  db.all('SELECT * FROM orders ORDER BY createdAt DESC', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+app.get('/api/orders', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    // Map column names
+    const orders = data.map(o => ({
+      ...o,
+      customerName: o.customer_name,
+      mobileNumber: o.mobile_number,
+      paymentMethod: o.payment_method,
+      totalAmount: o.total_amount,
+      createdAt: o.created_at
+    }));
+
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST a new order (Customer)
-app.post('/api/orders', (req, res) => {
+app.post('/api/orders', async (req, res) => {
   const { customerName, mobileNumber, address, paymentMethod, totalAmount, items } = req.body;
   
-  db.run(`INSERT INTO orders (customerName, mobileNumber, address, paymentMethod, totalAmount) 
-          VALUES (?, ?, ?, ?, ?)`,
-    [customerName, mobileNumber, address, paymentMethod, totalAmount],
-    function(err) {
-      if (err) return res.status(500).json({ error: err.message });
-      const orderId = this.lastID;
-      
-      // Insert order items
-      if (items && items.length > 0) {
-        const stmt = db.prepare('INSERT INTO order_items (order_id, food_id, quantity, price) VALUES (?, ?, ?, ?)');
-        items.forEach(item => {
-          stmt.run(orderId, item.id, item.quantity, item.price);
-        });
-        stmt.finalize();
-      }
-      
-      // Emit socket notification here (to be added)
-      res.json({ message: 'Order placed successfully', orderId });
+  try {
+    // 1. Insert Order
+    const { data: orderData, error: orderError } = await supabase
+      .from('orders')
+      .insert([
+        { 
+          customer_name: customerName, 
+          mobile_number: mobileNumber, 
+          address, 
+          payment_method: paymentMethod, 
+          total_amount: totalAmount 
+        }
+      ])
+      .select();
+
+    if (orderError) throw orderError;
+    const orderId = orderData[0].id;
+
+    // 2. Insert Order Items
+    if (items && items.length > 0) {
+      const orderItems = items.map(item => ({
+        order_id: orderId,
+        food_id: item.id,
+        quantity: item.quantity,
+        price: item.price
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
     }
-  );
+
+    res.json({ message: 'Order placed successfully', orderId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET orders by mobile or name (Customer History)
-app.get('/api/orders/history/:query', (req, res) => {
-  const sql = `
-    SELECT o.*, GROUP_CONCAT(fi.name || ' x ' || oi.quantity, ', ') as itemsSummary
-    FROM orders o
-    LEFT JOIN order_items oi ON o.id = oi.order_id
-    LEFT JOIN food_items fi ON oi.food_id = fi.id
-    WHERE o.mobileNumber = ? OR o.customerName = ?
-    GROUP BY o.id
-    ORDER BY o.createdAt DESC
-  `;
-  db.all(sql, [req.params.query, req.params.query], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+app.get('/api/orders/history/:query', async (req, res) => {
+  const query = req.params.query;
+  try {
+    // We'll fetch orders and their items using a join or multiple queries
+    // For simplicity and since we don't have a view, we fetch orders then items
+    const { data: orders, error: ordersError } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        order_items (
+          quantity,
+          price,
+          food_items ( name )
+        )
+      `)
+      .or(`mobile_number.eq.${query},customer_name.eq.${query}`)
+      .order('created_at', { ascending: false });
+
+    if (ordersError) throw ordersError;
+
+    const history = orders.map(o => {
+      const itemsSummary = o.order_items.map(oi => `${oi.food_items.name} x ${oi.quantity}`).join(', ');
+      return {
+        ...o,
+        customerName: o.customer_name,
+        mobileNumber: o.mobile_number,
+        paymentMethod: o.payment_method,
+        totalAmount: o.total_amount,
+        createdAt: o.created_at,
+        itemsSummary
+      };
+    });
+
+    res.json(history);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET single order status (Order Tracking)
-app.get('/api/orders/:id', (req, res) => {
-  const orderId = req.params.id;
-  db.get('SELECT * FROM orders WHERE id = ?', [orderId], (err, row) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (!row) {
-      // Fallback: If not found, check if ID is actually the dummy CP-style ID or something else
-      return res.status(404).json({ error: 'Order not found' });
-    }
-    res.json(row);
-  });
+app.get('/api/orders/:id', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Order not found' });
+
+    res.json({
+      ...data,
+      customerName: data.customer_name,
+      mobileNumber: data.mobile_number,
+      paymentMethod: data.payment_method,
+      totalAmount: data.total_amount,
+      createdAt: data.created_at
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // UPDATE order status (Admin)
-app.put('/api/orders/:id/status', (req, res) => {
+app.put('/api/orders/:id/status', async (req, res) => {
   const { status } = req.body;
-  const orderId = req.params.id;
-  
-  db.run('UPDATE orders SET status = ? WHERE id = ?', [status, orderId], function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    if (this.changes === 0) return res.status(404).json({ error: 'Order not found' });
+  try {
+    const { error } = await supabase
+      .from('orders')
+      .update({ status })
+      .eq('id', req.params.id);
+
+    if (error) throw error;
     res.json({ message: 'Status updated successfully' });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.listen(PORT, () => {
