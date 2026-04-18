@@ -12,6 +12,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import CouponSystem from './pages/CouponSystem';
 import Profile from './pages/Profile';
+import Checkout from './pages/Checkout';
+import OrderTracking from './pages/OrderTracking';
 
 const App = () => {
   return (
@@ -31,6 +33,8 @@ const App = () => {
           <Route path="/coupons" element={<CouponSystem />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/orders" element={<Profile activeTab="orders" />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/track-order/:id" element={<OrderTracking />} />
         </Routes>
       </main>
 

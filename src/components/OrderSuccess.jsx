@@ -37,7 +37,7 @@ const OrderSuccess = ({ orderId }) => {
 
         <div className="space-y-4">
           <Link 
-            to="/profile" 
+            to={`/track-order/${orderId}`} 
             className="w-full btn-primary py-4 flex items-center justify-center space-x-2 group"
           >
             <span>Track My Order</span>

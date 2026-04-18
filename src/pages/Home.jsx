@@ -1,13 +1,16 @@
 import React from 'react';
 import Hero from '../components/Hero';
 import FoodCard from '../components/FoodCard';
-import { dishes } from '../data/menu';
+import { useMenu } from '../hooks/useMenu';
 import { motion } from 'framer-motion';
 import { ArrowRight, Star, Clock, ShieldCheck, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
+  const { dishes, loading } = useMenu();
   const featuredDishes = dishes.slice(0, 4);
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading menu...</div>;
 
   return (
     <div className="space-y-24 pb-24">

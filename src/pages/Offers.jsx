@@ -2,10 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Tag, Clock, Gift, ArrowRight, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { dishes, coupons } from '../data/menu';
+import { useMenu } from '../hooks/useMenu';
+import { coupons } from '../data/menu';
 import FoodCard from '../components/FoodCard';
 
 const Offers = () => {
+  const { dishes, loading } = useMenu();
   const offerDishes = dishes.filter(d => d.originalPrice);
 
   return (
@@ -20,7 +22,7 @@ const Offers = () => {
           <Zap size={16} fill="currentColor" />
           <span>LIMITED TIME OFFERS</span>
         </motion.div>
-        <h1 className="text-4xl lg:text-5xl font-outfit font-extrabold text-brand-dark mb-6">
+        <h1 className="text-4xl lg:text-5xl font-outfit font-extrabold text-gray-900 dark:text-brand-secondary mb-6">
           Today's Special <span className="text-brand-primary">Deals</span>
         </h1>
         <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-lg">
@@ -28,59 +30,65 @@ const Offers = () => {
         </p>
       </div>
 
-      {/* Coupon Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-        {coupons.map((coupon, idx) => (
-          <motion.div
-            key={coupon.code}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            className="bg-white p-8 rounded-[2.5rem] border-2 border-dashed border-brand-primary/20 relative overflow-hidden group hover:border-brand-primary transition-colors"
-          >
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-brand-primary/5 rounded-full blur-2xl group-hover:bg-brand-primary/10 transition-colors" />
-            
-            <div className="flex items-center justify-between mb-6">
-              <div className="p-3 bg-brand-primary/10 rounded-2xl text-brand-primary">
-                <Gift size={24} />
-              </div>
-              <div className="flex items-center gap-1 text-xs font-bold text-gray-400">
-                <Clock size={12} />
-                <span>Expiring soon</span>
-              </div>
-            </div>
-
-            <h3 className="text-2xl font-bold text-brand-dark mb-2">{coupon.discount}% OFF</h3>
-            <p className="text-gray-500 text-sm mb-6">{coupon.description}</p>
-            
-            <div className="flex items-center justify-between bg-brand-light p-4 rounded-2xl mt-4 border border-gray-100">
-              <span className="font-outfit font-extrabold tracking-widest text-brand-dark">{coupon.code}</span>
-              <button 
-                onClick={() => {
-                  navigator.clipboard.writeText(coupon.code);
-                  alert('Coupon code copied!');
-                }}
-                className="text-xs font-bold text-brand-primary hover:underline"
+      {loading ? (
+        <div className="text-center py-20 text-gray-500 font-bold">Loading Offers...</div>
+      ) : (
+        <>
+          {/* Coupon Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+            {coupons.map((coupon, idx) => (
+              <motion.div
+                key={coupon.code}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="bg-white dark:bg-[#1E2229] p-8 rounded-[2.5rem] border-2 border-dashed border-brand-primary/20 dark:border-brand-primary/40 relative overflow-hidden group hover:border-brand-primary dark:hover:border-brand-primary transition-colors shadow-sm"
               >
-                COPY CODE
-              </button>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-brand-primary/5 rounded-full blur-2xl group-hover:bg-brand-primary/10 transition-colors" />
+                
+                <div className="flex items-center justify-between mb-6">
+                  <div className="p-3 bg-brand-primary/10 rounded-2xl text-brand-primary">
+                    <Gift size={24} />
+                  </div>
+                  <div className="flex items-center gap-1 text-xs font-bold text-gray-400">
+                    <Clock size={12} />
+                    <span>Expiring soon</span>
+                  </div>
+                </div>
 
-      {/* Discounted Dishes */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-outfit font-extrabold text-brand-dark mb-8 flex items-center gap-3">
-          <Tag className="text-brand-primary" />
-          <span>Discounted Items</span>
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {offerDishes.map((dish) => (
-            <FoodCard key={dish.id} dish={dish} />
-          ))}
-        </div>
-      </div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{coupon.discount}% OFF</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">{coupon.description}</p>
+                
+                <div className="flex items-center justify-between bg-gray-100 dark:bg-[#2D333E] p-4 rounded-2xl mt-4 border border-gray-200 dark:border-transparent">
+                  <span className="font-outfit font-extrabold tracking-widest text-gray-900 dark:text-white">{coupon.code}</span>
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(coupon.code);
+                      alert('Coupon code copied!');
+                    }}
+                    className="text-xs font-bold text-brand-primary hover:underline"
+                  >
+                    COPY CODE
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Discounted Dishes */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-outfit font-extrabold text-gray-900 dark:text-white mb-8 flex items-center gap-3">
+              <Tag className="text-brand-primary" />
+              <span>Discounted Items</span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {offerDishes.map((dish) => (
+                <FoodCard key={dish.id} dish={dish} />
+              ))}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Combo Banner */}
       <div className="mt-20 relative rounded-[3rem] overflow-hidden bg-brand-dark text-white p-12 lg:p-20">
