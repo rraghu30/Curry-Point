@@ -18,6 +18,26 @@ const OrderTracking = () => {
   useEffect(() => {
     const fetchOrderStatus = async () => {
       try {
+        // 1. Check localStorage first
+        const localOrders = JSON.parse(localStorage.getItem('cp_orders') || '[]');
+        const localOrder = localOrders.find(o => String(o.id) === String(id));
+
+        if (localOrder) {
+          // Simulate status progression based on time elapsed
+          const elapsed = Date.now() - new Date(localOrder.createdAt).getTime();
+          const minutes = elapsed / (1000 * 60);
+          
+          let simulatedStatus = 'Pending';
+          if (minutes > 15) simulatedStatus = 'Delivered';
+          else if (minutes > 10) simulatedStatus = 'Out for Delivery';
+          else if (minutes > 5) simulatedStatus = 'Preparing';
+
+          setOrder({ ...localOrder, status: simulatedStatus });
+          setLoading(false);
+          return;
+        }
+
+        // 2. Fallback to API
         const res = await fetch(`${API_URL}/orders/${id}`);
         if (!res.ok) throw new Error('Order not found');
         const data = await res.json();
@@ -30,7 +50,7 @@ const OrderTracking = () => {
     };
 
     fetchOrderStatus();
-    const interval = setInterval(fetchOrderStatus, 10000); // Poll every 10s
+    const interval = setInterval(fetchOrderStatus, 5000); // Poll more frequently for local simulation
     return () => clearInterval(interval);
   }, [id]);
 

@@ -31,11 +31,34 @@ const Profile = ({ activeTab = 'profile' }) => {
   const fetchOrderHistory = async () => {
     setLoadingOrders(true);
     try {
-      // Using user name to fetch history since dummy auth doesn't have mobile
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const res = await fetch(`${API_URL}/orders/history/${user.name}`);
-      const data = await res.json();
-      setOrders(data);
+      // 1. Get local orders
+      const localOrders = JSON.parse(localStorage.getItem('cp_orders') || '[]');
+      
+      // 2. Try to get backend orders
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const res = await fetch(`${API_URL}/orders/history/${user.name}`);
+        if (res.ok) {
+          const apiOrders = await res.json();
+          
+          // Merge and remove duplicates (by ID)
+          const merged = [...localOrders];
+          apiOrders.forEach(ao => {
+            if (!merged.find(lo => lo.id === ao.id)) {
+              merged.push(ao);
+            }
+          });
+          
+          // Sort by date descending
+          merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          setOrders(merged);
+        } else {
+          setOrders(localOrders);
+        }
+      } catch (e) {
+        console.warn('Backend history fetch failed, using local data.');
+        setOrders(localOrders);
+      }
     } catch (err) {
       console.error('Failed to fetch history:', err);
     } finally {

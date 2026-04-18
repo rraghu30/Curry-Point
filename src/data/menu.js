@@ -644,6 +644,128 @@ export const dishes = [
     rating: 4.5,
     image: "https://images.unsplash.com/photo-1549642050-2f9540026e6d?auto=format&fit=crop&q=80&w=800",
     isVeg: true
+  },
+
+  // --- OFFERS / SPECIALS (10 items) ---
+  {
+    id: 101,
+    name: "Weekend Family Feast",
+    category: "offers",
+    description: "2 Biryanis, 1 Paneer/Chicken Starter, 2 Desserts, and Drinks. Serves 4.",
+    price: 999,
+    originalPrice: 1499,
+    rating: 4.9,
+    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=800",
+    tags: ["Combo", "Value"],
+    isVeg: false
+  },
+  {
+    id: 102,
+    name: "Couple's Date Night",
+    category: "offers",
+    description: "1 Premium Curry, 2 Butter Naans, 1 Starter, and 2 Gulab Jamuns.",
+    price: 599,
+    originalPrice: 799,
+    rating: 4.8,
+    image: "https://images.unsplash.com/photo-1590480500072-46ccbd100d02?auto=format&fit=crop&q=80&w=800",
+    tags: ["Combo"],
+    isVeg: true
+  },
+  {
+    id: 103,
+    name: "Office Lunch Box",
+    category: "offers",
+    description: "Dal, Veg Curry, Rice, 2 Rotis, Salad, and Sweet. Perfect for a quick meal.",
+    price: 199,
+    originalPrice: 249,
+    rating: 4.6,
+    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=800",
+    tags: ["Lunch Special"],
+    isVeg: true
+  },
+  {
+    id: 104,
+    name: "Biryani Party Pack",
+    category: "offers",
+    description: "3 Kg Premium Mutton/Chicken Biryani with Raita and Salan. Serves 6-8.",
+    price: 1299,
+    originalPrice: 1800,
+    rating: 4.9,
+    image: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&q=80&w=800",
+    tags: ["Party Pack"],
+    isVeg: false
+  },
+  {
+    id: 105,
+    name: "Student Thali",
+    category: "offers",
+    description: "Simple home-style meal with Dal, Rice, and 1 seasonal Veg.",
+    price: 99,
+    originalPrice: 149,
+    rating: 4.4,
+    image: "https://images.unsplash.com/photo-1626132646522-6b9487cca240?auto=format&fit=crop&q=80&w=800",
+    tags: ["Budget"],
+    isVeg: true
+  },
+  {
+    id: 106,
+    name: "Dessert Platter",
+    category: "offers",
+    description: "Mini portions of Rasmalai, Gulab Jamun, and Kaju Katli.",
+    price: 149,
+    originalPrice: 199,
+    rating: 4.7,
+    image: "https://images.unsplash.com/photo-1549642050-2f9540026e6d?auto=format&fit=crop&q=80&w=800",
+    tags: ["Sweet Deal"],
+    isVeg: true
+  },
+  {
+    id: 107,
+    name: "Snack Combo",
+    category: "offers",
+    description: "Samosas (2), Pakoras (4), and Masala Chai.",
+    price: 120,
+    originalPrice: 160,
+    rating: 4.5,
+    image: "https://images.unsplash.com/photo-1601050690597-df056fb17796?auto=format&fit=crop&q=80&w=800",
+    tags: ["Tea Time"],
+    isVeg: true
+  },
+  {
+    id: 108,
+    name: "Paneer Lover's Combo",
+    category: "offers",
+    description: "Paneer Butter Masala + 2 Garlic Naans.",
+    price: 349,
+    originalPrice: 420,
+    rating: 4.8,
+    image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&q=80&w=800",
+    tags: ["Popular"],
+    isVeg: true
+  },
+  {
+    id: 109,
+    name: "Chicken Delight Combo",
+    category: "offers",
+    description: "Butter Chicken + 2 Laccha Parathas.",
+    price: 399,
+    originalPrice: 480,
+    rating: 4.9,
+    image: "https://images.unsplash.com/photo-1603894584134-f132f1783bcd?auto=format&fit=crop&q=80&w=800",
+    tags: ["Bestseller"],
+    isVeg: false
+  },
+  {
+    id: 110,
+    name: "Healthy Veg Bowl",
+    category: "offers",
+    description: "Quinoa, roasted veggies, and paneer with mint chutney.",
+    price: 249,
+    originalPrice: 320,
+    rating: 4.7,
+    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=800",
+    tags: ["Healthy"],
+    isVeg: true
   }
 ];
 
