@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, ChevronDown, CheckCircle2, Clock, Truck, XCircle, Package } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const OrdersManagement = () => {
   const [orders, setOrders] = useState([]);

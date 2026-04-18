@@ -32,7 +32,8 @@ const Profile = ({ activeTab = 'profile' }) => {
     setLoadingOrders(true);
     try {
       // Using user name to fetch history since dummy auth doesn't have mobile
-      const res = await fetch(`http://localhost:5000/api/orders/history/${user.name}`);
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const res = await fetch(`${API_URL}/orders/history/${user.name}`);
       const data = await res.json();
       setOrders(data);
     } catch (err) {

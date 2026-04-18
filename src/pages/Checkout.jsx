@@ -169,7 +169,8 @@ const Checkout = () => {
         items: cartItems.map(item => ({ id: item.id, quantity: item.quantity, price: item.price }))
       };
 
-      const res = await fetch('http://localhost:5000/api/orders', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const res = await fetch(`${API_URL}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderPayload)
